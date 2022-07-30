@@ -1,6 +1,5 @@
 ﻿using MailKit.Net.Pop3;
 using MailKit.Security;
-using System.Net.Mail;
 
 namespace Mail.Fercher.Core;
 
