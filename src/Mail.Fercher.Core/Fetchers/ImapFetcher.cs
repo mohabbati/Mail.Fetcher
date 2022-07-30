@@ -1,8 +1,8 @@
 ﻿namespace Mail.Fercher.Core;
 
-internal class ImapFetcher : IFetcher
+public class ImapFetcher : IFetcher
 {
-    public Task<List<MailMessage>> Fetch(MailServerConnection mailServerConnection)
+    public Task<List<MailMessage>> FetchAsync(MailServerConnection mailServerConnection, FetchRequest fetchRequest, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

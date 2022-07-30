@@ -2,5 +2,5 @@
 
 public interface IFetcher
 {
-    Task<List<MailMessage>> Fetch(MailServerConnection mailServerConnection);
+    Task<List<MailMessage>> FetchAsync(MailServerConnection mailServerConnection, FetchRequest fetchRequest, CancellationToken cancellationToken);
 }

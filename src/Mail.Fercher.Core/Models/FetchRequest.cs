@@ -2,7 +2,7 @@
 
 namespace Mail.Fercher.Core;
 
-public class Request
+public class FetchRequest
 {
     public SearchQuery? Query { get; set; }
 }

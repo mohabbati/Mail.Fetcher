@@ -1,8 +1,8 @@
 ﻿namespace Mail.Fercher.Core;
 
-internal class Pop3Fetcher : IFetcher
+public class Pop3Fetcher : IFetcher
 {
-    public Task<List<MailMessage>> Fetch(MailServerConnection mailServerConnection)
+    public Task<List<MailMessage>> FetchAsync(MailServerConnection mailServerConnection, FetchRequest fetchRequest, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
