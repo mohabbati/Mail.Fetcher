@@ -1,18 +1,72 @@
-﻿using MailKit.Search;
+﻿namespace Mail.Fercher.Core;
 
-namespace Mail.Fercher.Core;
-
-public class MailFetcher
+public class MailFetcher<TFetcher>
+    where TFetcher : IFetcher
 {
-    public async Task<List<MailMessage>> GetAsync(IFetcher fetcher, MailServerConnection mailServerConnection, CancellationToken cancellationToken)
+    private readonly TFetcher fetcher;
+
+    private readonly FetcherConfiguration _fetcherConfiguration;
+
+    public MailFetcher()
     {
-        return await this.GetAsync(fetcher, mailServerConnection, new() { Query = SearchQuery.All }, cancellationToken);
+        _fetcherConfiguration = new FetcherConfiguration();
     }
 
-    public async Task<List<MailMessage>> GetAsync(IFetcher fetcher, MailServerConnection mailServerConnection, FetchRequest fetchRequest, CancellationToken cancellationToken)
+    public MailFetcher(FetcherConfiguration fetcherConfiguration)
     {
-        var result = await fetcher.FetchAsync(mailServerConnection, fetchRequest, cancellationToken);
+        _fetcherConfiguration = fetcherConfiguration;
+    }
+
+    public async Task<List<MailMessage>> InvokeAsync(MailServerConnection mailServerConnection, CancellationToken cancellationToken)
+    {
+        await OnFetching(fetcher, cancellationToken);
+
+        var result = new List<MailMessage>();
+
+        try
+        {
+            if (_fetcherConfiguration.ExecutionType == FetcherConfiguration.ParallelismStatus.None)
+            {
+                result = await fetcher.FetchAsync(mailServerConnection, cancellationToken);
+            }
+            else if (_fetcherConfiguration.ExecutionType is FetcherConfiguration.ParallelismStatus.ConditionalParallel or FetcherConfiguration.ParallelismStatus.ForceParallel)
+            {
+                result = await fetcher.FetchParallelAsync(_fetcherConfiguration, mailServerConnection, cancellationToken);
+            }
+        }
+        catch (Exception)
+        {
+            await OnFetchFailed(fetcher, cancellationToken);
+
+            throw;
+        }
+
+        await OnFetched(fetcher, cancellationToken);
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets called right before Fetch
+    /// </summary>
+    protected virtual Task OnFetching(TFetcher fetcher, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Gets called right after Fetch
+    /// </summary>
+    protected virtual Task OnFetched(TFetcher fetcher, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Gets called right after Fetch failed
+    /// </summary>
+    protected virtual Task OnFetchFailed(TFetcher fetcher, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
     }
 }
