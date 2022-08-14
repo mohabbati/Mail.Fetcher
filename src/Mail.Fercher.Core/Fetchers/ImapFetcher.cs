@@ -1,6 +1,7 @@
 ﻿using MailKit;
 using MailKit.Security;
 using MailKit.Net.Imap;
+using System.Collections.Concurrent;
 
 namespace Mail.Fercher.Core;
 
@@ -33,17 +34,17 @@ public class ImapFetcher : IFetcher
 
         var uniqueIds = await client.Inbox.SearchAsync(_fetchRequest.Query, cancellationToken);
 
-        var mailMessages = new List<MailMessage>();
+        var mailMessages = new LinkedList<MailMessage>();
 
         foreach (var item in uniqueIds)
         {
             var message = client.Inbox.GetMessage(item);
-            mailMessages.Add(new() { MimeMessage = message });
+            mailMessages.AddLast(new MailMessage() { MimeMessage = message });
         }
 
         await client.DisconnectAsync(true, cancellationToken);
 
-        return mailMessages;
+        return mailMessages.ToList();
     }
 
     public async Task<List<MailMessage>> FetchParallelAsync(FetcherConfiguration fetcherConfiguration, MailServerConnection mailServerConnection, CancellationToken cancellationToken)
@@ -61,7 +62,7 @@ public class ImapFetcher : IFetcher
             return await FetchAsync(client, cancellationToken);
         }
 
-        var mailMessages = new List<MailMessage>();
+        var mailMessages = new ConcurrentBag<MailMessage>();
 
         await Parallel.ForEachAsync(uniqueIds, new ParallelOptions
         {
@@ -76,7 +77,7 @@ public class ImapFetcher : IFetcher
 
         await client.DisconnectAsync(true, cancellationToken);
 
-        return mailMessages;
+        return mailMessages.ToList();
     }
 
     private async Task ConnectTo(ImapClient client, MailServerConnection mailServerConnection, CancellationToken cancellationToken)

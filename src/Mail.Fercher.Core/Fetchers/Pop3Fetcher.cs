@@ -1,5 +1,6 @@
 ﻿using MailKit.Net.Pop3;
 using MailKit.Security;
+using System.Collections.Concurrent;
 
 namespace Mail.Fercher.Core;
 
@@ -16,17 +17,17 @@ public class Pop3Fetcher : IFetcher
 
     private async Task<List<MailMessage>> FetchAsync(Pop3Client client, CancellationToken cancellationToken)
     {
-        var mailMessages = new List<MailMessage>();
+        var mailMessages = new LinkedList<MailMessage>();
 
         for (int i = 0; i < client.Count; i++)
         {
             var message = await GetMessageAsync(client, i, cancellationToken);
-            mailMessages.Add(message);
+            mailMessages.AddLast(message);
         }
 
         await client.DisconnectAsync(true, cancellationToken);
 
-        return mailMessages;
+        return mailMessages.ToList();
     }
 
     public async Task<List<MailMessage>> FetchParallelAsync(FetcherConfiguration fetcherConfiguration, MailServerConnection mailServerConnection, CancellationToken cancellationToken)
@@ -42,7 +43,7 @@ public class Pop3Fetcher : IFetcher
 
         var indexes = Enumerable.Range(0, client.Count - 1).ToList().AsReadOnly();
 
-        var mailMessages = new List<MailMessage>();
+        var mailMessages = new ConcurrentBag<MailMessage>();
 
         await Parallel.ForEachAsync(indexes, new ParallelOptions
         {
@@ -57,7 +58,7 @@ public class Pop3Fetcher : IFetcher
 
         await client.DisconnectAsync(true, cancellationToken);
 
-        return mailMessages;
+        return mailMessages.ToList();
     }
 
     private async Task ConnectTo(Pop3Client client, MailServerConnection mailServerConnection, CancellationToken cancellationToken)
