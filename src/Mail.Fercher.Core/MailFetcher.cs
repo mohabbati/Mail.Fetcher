@@ -5,33 +5,37 @@ public class MailFetcher<TFetcher>
 {
     private readonly TFetcher fetcher;
 
+    private readonly MailServerConnection _mailServerConnection;
     private readonly FetcherConfiguration _fetcherConfiguration;
 
-    public MailFetcher()
+    public MailFetcher(MailServerConnection mailServerConnection, FetcherConfiguration fetcherConfiguration)
     {
-        _fetcherConfiguration = new FetcherConfiguration();
-    }
+        ArgumentNullException.ThrowIfNull(mailServerConnection);
+        ArgumentNullException.ThrowIfNull(fetcherConfiguration);
 
-    public MailFetcher(FetcherConfiguration fetcherConfiguration)
-    {
+        _mailServerConnection = mailServerConnection;
         _fetcherConfiguration = fetcherConfiguration;
     }
 
-    public async Task<List<MailMessage>> InvokeAsync(MailServerConnection mailServerConnection, CancellationToken cancellationToken)
+    public async Task<List<MailMessage>> InvokeAsync(CancellationToken cancellationToken)
     {
         await OnFetching(fetcher, cancellationToken);
 
-        var result = new List<MailMessage>();
+        List<MailMessage> result;
 
         try
         {
             if (_fetcherConfiguration.ExecutionType == FetcherConfiguration.ParallelismStatus.None)
             {
-                result = await fetcher.FetchAsync(mailServerConnection, cancellationToken);
+                result = await fetcher.FetchAsync(_mailServerConnection, cancellationToken);
             }
             else if (_fetcherConfiguration.ExecutionType is FetcherConfiguration.ParallelismStatus.ConditionalParallel or FetcherConfiguration.ParallelismStatus.ForceParallel)
             {
-                result = await fetcher.FetchParallelAsync(_fetcherConfiguration, mailServerConnection, cancellationToken);
+                result = await fetcher.FetchParallelAsync(_fetcherConfiguration, _mailServerConnection, cancellationToken);
+            }
+            else
+            {
+                result = new List<MailMessage>();
             }
         }
         catch (Exception)
