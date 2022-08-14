@@ -3,23 +3,23 @@
 public class MailFetcher<TFetcher>
     where TFetcher : IFetcher
 {
-    private readonly TFetcher fetcher;
+    private readonly TFetcher _fetcher;
 
     private readonly FetcherConfiguration _fetcherConfiguration;
 
-    public MailFetcher()
+    public MailFetcher(TFetcher fetcher) : this(fetcher, new FetcherConfiguration())
     {
-        _fetcherConfiguration = new FetcherConfiguration();
     }
 
-    public MailFetcher(FetcherConfiguration fetcherConfiguration)
+    public MailFetcher(TFetcher fetcher, FetcherConfiguration fetcherConfiguration)
     {
+        _fetcher = fetcher;
         _fetcherConfiguration = fetcherConfiguration;
     }
 
     public async Task<List<MailMessage>> InvokeAsync(MailServerConnection mailServerConnection, CancellationToken cancellationToken)
     {
-        await OnFetching(fetcher, cancellationToken);
+        await OnFetching(_fetcher, cancellationToken);
 
         var result = new List<MailMessage>();
 
@@ -27,21 +27,21 @@ public class MailFetcher<TFetcher>
         {
             if (_fetcherConfiguration.ExecutionType == FetcherConfiguration.ParallelismStatus.None)
             {
-                result = await fetcher.FetchAsync(mailServerConnection, cancellationToken);
+                result = await _fetcher.FetchAsync(mailServerConnection, cancellationToken);
             }
             else if (_fetcherConfiguration.ExecutionType is FetcherConfiguration.ParallelismStatus.ConditionalParallel or FetcherConfiguration.ParallelismStatus.ForceParallel)
             {
-                result = await fetcher.FetchParallelAsync(_fetcherConfiguration, mailServerConnection, cancellationToken);
+                result = await _fetcher.FetchParallelAsync(_fetcherConfiguration, mailServerConnection, cancellationToken);
             }
         }
         catch (Exception)
         {
-            await OnFetchFailed(fetcher, cancellationToken);
+            await OnFetchFailed(_fetcher, cancellationToken);
 
             throw;
         }
 
-        await OnFetched(fetcher, cancellationToken);
+        await OnFetched(_fetcher, cancellationToken);
 
         return result;
     }
