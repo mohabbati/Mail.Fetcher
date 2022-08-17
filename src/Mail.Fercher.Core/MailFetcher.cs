@@ -4,18 +4,37 @@ public class MailFetcher<TFetcher>
     where TFetcher : IFetcher
 {
     private readonly TFetcher _fetcher;
-    private readonly MailServerConnection _mailServerConnection;
     private readonly FetcherConfiguration _fetcherConfiguration;
+    private MailServerConnection _mailServerConnection;
 
-    public MailFetcher(TFetcher fetcher, MailServerConnection mailServerConnection, FetcherConfiguration fetcherConfiguration)
+    public MailFetcher(TFetcher fetcher, FetcherConfiguration fetcherConfiguration)
     {
         ArgumentNullException.ThrowIfNull(fetcher);
-        ArgumentNullException.ThrowIfNull(mailServerConnection);
         ArgumentNullException.ThrowIfNull(fetcherConfiguration);
 
         _fetcher = fetcher;
-        _mailServerConnection = mailServerConnection;
         _fetcherConfiguration = fetcherConfiguration;
+    }
+
+    public void ConfigureConnection(MailServerConnection mailServerConnection)
+    {
+        ArgumentNullException.ThrowIfNull(mailServerConnection);
+
+        _mailServerConnection = mailServerConnection;
+    }
+
+    public void ConfigureFetchRequest(FetchRequest fetchRequest)
+    {
+        ArgumentNullException.ThrowIfNull(fetchRequest);
+
+        if (_fetcher is IConfigurableFetcher configurabelFetcher)
+        {
+            configurabelFetcher.SetFetchRequest(fetchRequest);
+        }
+        else
+        {
+            throw new InvalidOperationException("The fetcher is not configurable.");
+        }
     }
 
     public async Task<List<MailMessage>> InvokeAsync(CancellationToken cancellationToken)

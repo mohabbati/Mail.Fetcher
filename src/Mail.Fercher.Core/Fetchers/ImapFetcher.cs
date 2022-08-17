@@ -5,20 +5,20 @@ using System.Collections.Concurrent;
 
 namespace Mail.Fercher.Core;
 
-public class ImapFetcher : IFetcher
+public class ImapFetcher : IFetcher, IConfigurableFetcher
 {
-    private readonly FetchRequest _fetchRequest;
+    private FetchRequest _fetchRequest;
 
     public ImapFetcher()
     {
         _fetchRequest = new FetchRequest { Query = MailKit.Search.SearchQuery.All };
     }
-    
-    public ImapFetcher(FetchRequest fetchRequest)
+
+    public void SetFetchRequest(FetchRequest fetchRequest)
     {
         _fetchRequest = fetchRequest;
     }
-
+    
     public async Task<List<MailMessage>> FetchAsync(MailServerConnection mailServerConnection, CancellationToken cancellationToken)
     {
         using var client = new ImapClient();
