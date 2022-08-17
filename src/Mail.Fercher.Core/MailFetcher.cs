@@ -4,18 +4,34 @@ public class MailFetcher<TFetcher>
     where TFetcher : IFetcher
 {
     private readonly TFetcher _fetcher;
-    private readonly FetcherConfiguration _fetcherConfiguration;
+    private FetcherConfiguration _fetcherConfiguration;
     private MailServerConnection _mailServerConnection;
 
-    public MailFetcher(TFetcher fetcher, FetcherConfiguration fetcherConfiguration)
+    public MailFetcher(TFetcher fetcher)
     {
         ArgumentNullException.ThrowIfNull(fetcher);
-        ArgumentNullException.ThrowIfNull(fetcherConfiguration);
 
         _fetcher = fetcher;
-        _fetcherConfiguration = fetcherConfiguration;
     }
 
+    /// <summary>
+    /// Configure fetcher how to fetch messages, sequential or parallel. If do not set it, the fetcher uses the default values.
+    /// </summary>
+    /// <param name="fetcherConfiguration"></param>
+    /// <returns></returns>
+    public MailFetcher<TFetcher> ConfigureFetcher(FetcherConfiguration fetcherConfiguration)
+    {
+        ArgumentNullException.ThrowIfNull(fetcherConfiguration);
+
+        _fetcherConfiguration = fetcherConfiguration;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configure mail server connection. It is required for fetching messages.
+    /// </summary>
+    /// <param name="mailServerConnection"></param>
     public void ConfigureConnection(MailServerConnection mailServerConnection)
     {
         ArgumentNullException.ThrowIfNull(mailServerConnection);
@@ -23,6 +39,11 @@ public class MailFetcher<TFetcher>
         _mailServerConnection = mailServerConnection;
     }
 
+    /// <summary>
+    /// Configure fetch request to IConfigurableFetcher, such as ImapFetcher.
+    /// </summary>
+    /// <param name="fetchRequest"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void ConfigureFetchRequest(FetchRequest fetchRequest)
     {
         ArgumentNullException.ThrowIfNull(fetchRequest);
@@ -37,8 +58,24 @@ public class MailFetcher<TFetcher>
         }
     }
 
+    /// <summary>
+    /// Fetch mail messages from the server based on all the configation.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public async Task<List<MailMessage>> InvokeAsync(CancellationToken cancellationToken)
     {
+        if (_mailServerConnection is null)
+        {
+            throw new Exception($"Configure mail server connection using {nameof(ConfigureConnection)}() method.");
+        }
+
+        if (_fetcherConfiguration is null)
+        {
+            _fetcherConfiguration = new FetcherConfiguration(); //Use the default values
+        }
+
         await OnFetching(_fetcher, cancellationToken);
 
         List<MailMessage> result;
