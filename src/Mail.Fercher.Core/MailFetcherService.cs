@@ -6,11 +6,21 @@ namespace Mail.Fercher.Core;
 public class MailFetcherService
 {
     private readonly IServiceProvider _serviceProvider;
-    private List<MailFetcherRequest> _mailFetcherRequests; //TODO: use builder to create new object
+    private readonly LinkedList<MailFetcherRequest> _mailFetcherRequests; //TODO: use builder to create new object
 
     public MailFetcherService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+
+        _mailFetcherRequests = new();
+    }
+
+    /// <summary>
+    /// CLear all fetchers.
+    /// </summary>
+    public void ClearFetchers()
+    {
+        _mailFetcherRequests.Clear();
     }
 
     /// <summary>
@@ -21,18 +31,21 @@ public class MailFetcherService
     {
         ArgumentNullException.ThrowIfNull(mailFetcherRequest);
 
-        _mailFetcherRequests.Add(mailFetcherRequest);
+        _mailFetcherRequests.AddLast(mailFetcherRequest);
     }
 
     /// <summary>
     /// Configure fetchers to fetch messages from the mail servers
     /// </summary>
     /// <param name="mailFetcherRequest"></param>
-    public void ConfigureFetchers(List<MailFetcherRequest> mailFetcherRequest)
+    public void ConfigureFetchers(List<MailFetcherRequest> mailFetcherRequests)
     {
-        ArgumentNullException.ThrowIfNull(mailFetcherRequest);
+        ArgumentNullException.ThrowIfNull(mailFetcherRequests);
 
-        _mailFetcherRequests = mailFetcherRequest;
+        mailFetcherRequests.ForEach(x =>
+        {
+            _mailFetcherRequests.AddLast(x);
+        });
     }
 
     /// <summary>
