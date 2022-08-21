@@ -1,7 +1,7 @@
-﻿using Mail.Fercher.Core.Models;
+﻿using Mail.Fercher.Models;
 using System.Collections.Concurrent;
 
-namespace Mail.Fercher.Core;
+namespace Mail.Fercher;
 
 public class MailFetcherService
 {

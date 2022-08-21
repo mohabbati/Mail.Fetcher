@@ -1,4 +1,4 @@
-﻿namespace Mail.Fercher.Core;
+﻿namespace Mail.Fercher;
 
 public class FetcherConfiguration
 {

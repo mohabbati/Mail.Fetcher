@@ -3,7 +3,7 @@ using MailKit.Security;
 using MailKit.Net.Imap;
 using System.Collections.Concurrent;
 
-namespace Mail.Fercher.Core;
+namespace Mail.Fercher;
 
 public class ImapFetcher : IFetcher, IConfigurableFetcher
 {

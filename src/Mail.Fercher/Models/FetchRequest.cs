@@ -1,6 +1,6 @@
 ﻿using MailKit.Search;
 
-namespace Mail.Fercher.Core;
+namespace Mail.Fercher;
 
 public class FetchRequest
 {

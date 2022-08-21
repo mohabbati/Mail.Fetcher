@@ -2,7 +2,7 @@
 using MailKit.Security;
 using System.Collections.Concurrent;
 
-namespace Mail.Fercher.Core;
+namespace Mail.Fercher;
 
 public class Pop3Fetcher : IFetcher
 {
