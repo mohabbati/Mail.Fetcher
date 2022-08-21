@@ -1,5 +1,5 @@
 ﻿using MimeKit;
-namespace Mail.Fercher.Core;
+namespace Mail.Fercher;
 
 public class MailMessage
 {

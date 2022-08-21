@@ -1,4 +1,4 @@
-﻿namespace Mail.Fercher.Core.Models;
+﻿namespace Mail.Fercher.Models;
 
 public class MailFetcherRequest
 {
