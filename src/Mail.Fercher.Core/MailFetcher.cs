@@ -32,11 +32,13 @@ public class MailFetcher<TFetcher>
     /// Configure mail server connection. It is required for fetching messages.
     /// </summary>
     /// <param name="mailServerConnection"></param>
-    public void ConfigureConnection(MailServerConnection mailServerConnection)
+    public MailFetcher<TFetcher> ConfigureConnection(MailServerConnection mailServerConnection)
     {
         ArgumentNullException.ThrowIfNull(mailServerConnection);
 
         _mailServerConnection = mailServerConnection;
+
+        return this;
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public class MailFetcher<TFetcher>
     /// </summary>
     /// <param name="fetchRequest"></param>
     /// <exception cref="InvalidOperationException"></exception>
-    public void ConfigureFetchRequest(FetchRequest fetchRequest)
+    public MailFetcher<TFetcher> ConfigureFetchRequest(FetchRequest fetchRequest)
     {
         ArgumentNullException.ThrowIfNull(fetchRequest);
 
@@ -56,6 +58,8 @@ public class MailFetcher<TFetcher>
         {
             throw new InvalidOperationException("The fetcher is not configurable.");
         }
+
+        return this;
     }
 
     /// <summary>
